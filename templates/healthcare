@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Healthcare Providers</h2>
+
+<form method="GET">
+    <input name="base_id" placeholder="Base ID">
+    <button type="submit">Filter</button>
+</form>
+
+<ul>
+    {% for p in providers %}
+        <li>
+            {{ p.name }}
+            | TRICARE Prime: {{ p.tricare_prime }}
+            | Pediatric: {{ p.pediatric }}
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
