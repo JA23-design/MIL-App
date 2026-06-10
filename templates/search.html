@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Find Your Base Match</h2>
+
+<input id="baseSearch" placeholder="Search military base..." autocomplete="off"/>
+<div id="suggestions"></div>
+
+<form action="/results" method="GET">
+    <input type="hidden" name="base_id" id="base_id">
+    <button type="submit">Search</button>
+</form>
+
+<script src="/static/app.js"></script>
+
+{% endblock %}
