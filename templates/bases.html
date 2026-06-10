@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>PCS Bases</h2>
+
+<ul>
+    {% for base in bases %}
+        <li>
+            {{ base.name }} - {{ base.city }}, {{ base.state }} ({{ base.branch }})
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
