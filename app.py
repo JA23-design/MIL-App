@@ -1,6 +1,7 @@
 import os
 from app import create_app
 from models import db, Base, MedicalProvider, ChildcareCenter
+from routes.search import search_bp
 
 app = create_app()
 
@@ -30,3 +31,24 @@ with app.app_context():
     db.session.commit()
 
 print("Database initialized.")
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    db.init_app(app)
+
+    from routes.bases import bases_bp
+    from routes.healthcare import healthcare_bp
+    from routes.childcare import childcare_bp
+
+    app.register_blueprint(bases_bp)
+    app.register_blueprint(healthcare_bp)
+    app.register_blueprint(childcare_bp)
+    app.register_blueprint(search_bp)   # NEW
+
+    @app.route("/")
+    def home():
+        return render_template("home.html")
+
+    return app
