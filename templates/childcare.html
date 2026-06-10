@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Childcare Centers</h2>
+
+<form method="GET">
+    <input name="base_id" placeholder="Base ID">
+    <button type="submit">Filter</button>
+</form>
+
+<ul>
+    {% for c in centers %}
+        <li>
+            {{ c.name }}
+            | CCYS Accepted: {{ c.accepts_ccys }}
+            | Status: {{ c.availability_status }}
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
