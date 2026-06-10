@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Results</h2>
+
+<h3>Top Healthcare Providers</h3>
+<ul>
+    {% for p in providers %}
+        <li>
+            {{ p.name }}
+            — Score: {{ loop.index }}
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Childcare Centers</h3>
+<ul>
+    {% for c in childcare %}
+        <li>
+            {{ c.name }} — {{ c.availability_status }}
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
