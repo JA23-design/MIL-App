@@ -1,0 +1,47 @@
+from flask import Blueprint, render_template, request, redirect, url_for
+from flask_login import current_user, login_required
+from extensions import db
+from models import Base, FamilyProfile, PCSChecklistItem, UserTask
+
+pcs_planner_bp = Blueprint("pcs_planner", __name__, url_prefix="/pcs-planner")
+
+@pcs_planner_bp.route("/", methods=["GET", "POST"])
+@login_required
+def planner():
+    profile = FamilyProfile.query.filter_by(user_id=current_user.id).first()
+    bases = Base.query.order_by(Base.name).all()
+    if request.method == "POST":
+        if profile is None:
+            profile = FamilyProfile(user_id=current_user.id)
+            db.session.add(profile)
+        profile.destination_base_id = request.form.get("destination_base_id", type=int) or None
+        profile.move_type = request.form.get("move_type", "CONUS")
+        profile.has_vehicle = "has_vehicle" in request.form
+        profile.owns_or_rents_home = request.form.get("housing", "Rent")
+        profile.has_professional_license = "has_license" in request.form
+        profile.has_pets = "has_pets" in request.form
+        db.session.commit()
+        return redirect(url_for("pcs_planner.planner"))
+
+    move_type = profile.move_type if profile else "CONUS"
+    items = PCSChecklistItem.query.filter(PCSChecklistItem.move_type.in_(["ANY", move_type])).all()
+    if profile:
+        items = [i for i in items if (not i.requires_children or profile.has_children) and (not i.requires_vehicle or profile.has_vehicle) and (not i.requires_license or profile.has_professional_license) and (not i.requires_pets or profile.has_pets)]
+    tasks = {t.checklist_item_id: t for t in UserTask.query.filter_by(user_id=current_user.id).all() if t.checklist_item_id}
+    completed = sum(1 for i in items if tasks.get(i.id) and tasks[i.id].completed)
+    pct = round(completed / len(items) * 100) if items else 0
+    return render_template("pcs_planner.html", profile=profile, bases=bases, items=items, tasks=tasks, completed=completed, total=len(items), pct=pct)
+
+@pcs_planner_bp.route("/toggle/<int:item_id>", methods=["POST"])
+@login_required
+def toggle(item_id):
+    item = db.session.get(PCSChecklistItem, item_id)
+    if not item: return redirect(url_for("pcs_planner.planner"))
+    task = UserTask.query.filter_by(user_id=current_user.id, checklist_item_id=item_id).first()
+    if not task:
+        task = UserTask(user_id=current_user.id, checklist_item_id=item.id, title=item.title, phase=item.phase)
+        db.session.add(task)
+    task.completed = not task.completed
+    db.session.commit()
+    return redirect(url_for("pcs_planner.planner"))
+
